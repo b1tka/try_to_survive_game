@@ -13,7 +13,6 @@ clock = pygame.time.Clock()
 level = Level(level_1, screen)
 run = True
 while run:
-    screen.fill(BLACK)
     clock.tick(FPS)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:

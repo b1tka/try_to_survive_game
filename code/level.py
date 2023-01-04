@@ -86,7 +86,7 @@ class Level:
                         trees_tile_list = import_cut_graphics(r'..\data\level_data\texture\tree.png',
                                                               size_x=128, size_y=170)
                         trees_surface = trees_tile_list[int(val)]
-                        sprite = Crate(170, x, y, trees_surface)
+                        sprite = Crate(170, x, y, trees_surface, hitbox=True)
 
                     elif type == 'door':
                         door_tile_list = import_cut_graphics(r'..\data\level_data\texture\door.png',
@@ -165,9 +165,21 @@ class Level:
         self.bridge_sprite.update(direction)
 
     def check_collide(self):
-        if pygame.sprite.spritecollideany(self.player.sprite, self.water_sprites):
+        trees = self.trees_sprites.sprites()
+        player = self.player.sprite
+        camera = self.camera.sprite
+        camera.want_to_do_action(False)
+        if pygame.sprite.spritecollideany(player, self.water_sprites):
             self.texture_update(self.direction * speed * -1)
             self.player.update(back=True)
+        for tree in trees:
+            if tree.hitbox[0] - 10 < player.rect.centerx < tree.hitbox[0] + tree.hitbox[2] + 10 and \
+                    tree.hitbox[1] - 10 < player.rect.centery < tree.hitbox[1] + tree.hitbox[2] + 10:
+                if tree.hitbox[0] < player.rect.centerx < tree.hitbox[0] + tree.hitbox[2] and \
+                        tree.hitbox[1] < player.rect.centery < tree.hitbox[1] + tree.hitbox[2]:
+                    self.texture_update(self.direction * speed * -1)
+                    self.player.update(back=True)
+                camera.want_to_do_action(True)
 
     def run(self):
         self.move()
