@@ -165,21 +165,23 @@ class Level:
         self.bridge_sprite.update(direction)
 
     def check_collide(self):
-        trees = self.trees_sprites.sprites()
         player = self.player.sprite
-        camera = self.camera.sprite
-        camera.want_to_do_action(False)
-        if pygame.sprite.spritecollideany(player, self.water_sprites):
+        trees = self.trees_sprites.sprites()
+        if pygame.sprite.spritecollideany(self.player.sprite, self.water_sprites) or \
+                pygame.sprite.spritecollideany(self.player.sprite, self.cave_sprites) or \
+                pygame.sprite.spritecollideany(self.player.sprite, self.cave2_sprites):
             self.texture_update(self.direction * speed * -1)
             self.player.update(back=True)
         for tree in trees:
             if tree.hitbox[0] - 10 < player.rect.centerx < tree.hitbox[0] + tree.hitbox[2] + 10 and \
-                    tree.hitbox[1] - 10 < player.rect.centery < tree.hitbox[1] + tree.hitbox[2] + 10:
-                if tree.hitbox[0] < player.rect.centerx < tree.hitbox[0] + tree.hitbox[2] and \
-                        tree.hitbox[1] < player.rect.centery < tree.hitbox[1] + tree.hitbox[2]:
-                    self.texture_update(self.direction * speed * -1)
-                    self.player.update(back=True)
-                camera.want_to_do_action(True)
+                    tree.hitbox[1] - 10 < player.rect.centery < tree.hitbox[1] + tree.hitbox[3] + 10:
+                keys = pygame.key.get_pressed()
+                if keys[pygame.K_e]:
+                    player.destroy_object(tree)
+            if tree.hitbox[0] < player.rect.centerx < tree.hitbox[0] + tree.hitbox[2] and \
+                    tree.hitbox[1] < player.rect.centery < tree.hitbox[1] + tree.hitbox[3]:
+                self.texture_update(self.direction * speed * -1)
+                self.player.update(back=True)
 
     def run(self):
         self.move()

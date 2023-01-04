@@ -17,6 +17,7 @@ class Player(pygame.sprite.Sprite):
         self.vertical_borders = vertical_borders
         self.horizontal_borders = horizontal_borders
         self.healthpoints = 5
+        self.inventory = list()
 
     def move(self):
         keys = pygame.key.get_pressed()
@@ -40,6 +41,11 @@ class Player(pygame.sprite.Sprite):
                 self.direction.x = 0
         else:
             self.direction.x = 0
+
+    def destroy_object(self, object):
+        resource = object.get_resource()
+        print(resource)
+        object.kill()
 
     def set_lock_x(self, status):
         self.x_lock = status
