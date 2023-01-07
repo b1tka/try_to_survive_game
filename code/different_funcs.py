@@ -18,8 +18,8 @@ def import_cut_graphics(path, size_x=tile_size, size_y=tile_size):
     tile_num_y = int(surface.get_size()[1] / size_y)
     cut_tiles = list()
 
-    for row in range(tile_num_x):
-        for col in range(tile_num_y):
+    for row in range(tile_num_y):
+        for col in range(tile_num_x):
             x = col * size_x
             y = row * size_y
             new_surf = pygame.Surface((size_x, size_y), flags=pygame.SRCALPHA)

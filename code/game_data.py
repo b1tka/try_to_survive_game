@@ -8,6 +8,12 @@ level_1 = {
     'bridge': '../data/level_data/level/1/level_1_bridge.csv'
 }
 
+level_2 = {
+    'cave': r'..\data\level_data\level\2\cave_cave_inside.csv',
+    'door': r'..\data\level_data\level\2\cave_door.csv',
+    'stones': r'..\data\level_data\level\2\cave_stones.csv'
+}
+
 hero = {
     'w': {'static': r'..\data\player_data\player_forward_static.png',
           'run': (r'player_forward_run_1.png', r'player_forward_run_2.png')},
@@ -17,4 +23,9 @@ hero = {
           'run': (r'player_behind_run_1.png', r'player_behind_run_2.png')},
     'd': {'static': r'..\data\player_data\player_right_static.png',
           'run': (r'player_right_run_1.png', r'player_right_run_2.png')}
+}
+
+inventory = {
+    'cells': r'..\data\level_data\level\inventory\inventory_cells.csv',
+    'hero': r'..\data\level_data\level\inventory\inventory_hero.csv'
 }
