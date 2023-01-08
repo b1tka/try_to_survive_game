@@ -15,14 +15,10 @@ level_2 = {
 }
 
 hero = {
-    'w': {'static': r'..\data\player_data\player_forward_static.png',
-          'run': (r'player_forward_run_1.png', r'player_forward_run_2.png')},
-    'a': {'static': r'..\data\player_data\player_left_static.png',
-          'run': (r'player_left_run_1.png', r'player_left_run_2.png')},
-    's': {'static': r'..\data\player_data\player_behind_static.png',
-          'run': (r'player_behind_run_1.png', r'player_behind_run_2.png')},
-    'd': {'static': r'..\data\player_data\player_right_static.png',
-          'run': (r'player_right_run_1.png', r'player_right_run_2.png')}
+    'w': r'..\data\player_data\player_behind.png',
+    'a': r'..\data\player_data\player_left.png',
+    's': r'..\data\player_data\player_forward.png',
+    'd': r'..\data\player_data\player_right.png'
 }
 
 inventory = {

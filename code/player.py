@@ -10,9 +10,13 @@ from game_data import inventory
 class Player(pygame.sprite.Sprite):
     def __init__(self, screen):
         super().__init__()
-        self.image = pygame.Surface((64, 64))
-        self.image.fill('red')
-        self.rect = self.image.get_rect()
+        self.frames_behind = import_cut_graphics(hero['w'], size_x=60, size_y=93)
+        self.frames_left = import_cut_graphics(hero['a'], size_x=60, size_y=93)
+        self.frames_right = import_cut_graphics(hero['d'], size_x=60, size_y=93)
+        self.frames_forward = import_cut_graphics(hero['s'], size_x=60, size_y=93)
+        self.cur_frame = 0
+        self.rect = self.frames_forward[1].get_rect()
+        self.vision = 'forward'
         self.direction = pygame.math.Vector2(0, 0)
         self.rect.centerx = 800
         self.rect.centery = 450
@@ -63,6 +67,33 @@ class Player(pygame.sprite.Sprite):
         self.direction.y = 0
 
     def update(self, back=False):
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_w]:
+            self.cur_frame += 1
+            self.vision = 'behind'
+            self.image = self.frames_behind[self.cur_frame // 15 % 3]
+        elif keys[pygame.K_a]:
+            self.cur_frame += 1
+            self.vision = 'left'
+            self.image = self.frames_left[self.cur_frame // 15 % 3]
+        elif keys[pygame.K_s]:
+            self.cur_frame += 1
+            self.vision = 'forward'
+            self.image = self.frames_forward[self.cur_frame // 15 % 3]
+        elif keys[pygame.K_d]:
+            self.cur_frame += 1
+            self.vision = 'right'
+            self.image = self.frames_right[self.cur_frame // 15 % 3]
+        else:
+            if self.vision == 'behind':
+                self.image = self.frames_behind[0]
+            if self.vision == 'left':
+                self.image = self.frames_left[0]
+            if self.vision == 'right':
+                self.image = self.frames_right[0]
+            if self.vision == 'forward':
+                self.image = self.frames_forward[0]
+        self.cur_frame = self.cur_frame % 45
         if back:
             self.rect.center += self.direction * speed * -1
         else:
