@@ -1,5 +1,5 @@
 import pygame
-from game_data import hero
+from game_data import hero, items
 from settings import speed
 from different_funcs import csv_layout, import_cut_graphics
 from objects import StaticTile, Crate, TreeInventory, StoneInventory
@@ -107,6 +107,10 @@ class Inventory(pygame.sprite.Sprite):
         cell_item = csv_layout(inventory['cells'])
         self.cell_sprite = self.create_tile_group(cell_item, 'cell')
         self.cell_sprite.update(pygame.math.Vector2(700, 300))
+        self.all_resources = {
+            'tree': 0,
+            'stone': 0
+        }
         self.inventory = list()
         for _ in range(4):
             time_list = list()
@@ -142,19 +146,41 @@ class Inventory(pygame.sprite.Sprite):
 
         return sprite_group
 
+    def check_craft(self):
+        possible_items = list()
+        for item in items.keys():
+            keys = items[item].keys()
+            need = len(keys)
+            have = 0
+            for object in keys:
+                if self.all_resources[object] >= items[item][object]:
+                    have += 1
+            if have == need:
+                possible_items.append(item)
+
+        if len(possible_items) == 0:
+            return None
+        return possible_items
+
+    def draw_cell_craft(self):
+        background = import_cut_graphics(r'..\data\level_data\texture\craft_cell.png', size_x=256, size_y=128)[0]
+        background.blit(pygame.image.load(r'..\data\level_data\texture\sword.png'), (0, 0))
+        sprite =
+        return pygame.sprite.GroupSingle(sprite)
+
     def add_item(self, object, amount):
         is_break = False
-        print(amount)
+        self.all_resources[object] += amount
         for i in range(len(self.inventory)):
             for j in range(len(self.inventory[i])):
                 if self.inventory[i][j][0] != object and self.inventory[i][j][0] != 'NonObject':
                     continue
-                elif self.inventory[i][j][0] == object and self.inventory[i][j][1] <= 6:
-                    if self.inventory[i][j][1] == 6:
+                elif self.inventory[i][j][0] == object and self.inventory[i][j][1] <= 3:
+                    if self.inventory[i][j][1] == 3:
                         continue
-                    elif self.inventory[i][j][1] + amount > 6:
-                        amount = (self.inventory[i][j][1] + amount) % 6
-                        self.inventory[i][j][1] = 6
+                    elif self.inventory[i][j][1] + amount > 3:
+                        amount = (self.inventory[i][j][1] + amount) % 3
+                        self.inventory[i][j][1] = 3
                     else:
                         self.inventory[i][j][1] += amount
                         is_break = True
@@ -170,6 +196,10 @@ class Inventory(pygame.sprite.Sprite):
     def run(self):
         self.cell_sprite.draw(self.screen)
         self.hero_sprite.draw(self.screen)
+        self.draw_cell_craft().draw(self.screen)
+        craft = self.check_craft()
+        if craft:
+            print(craft)
         for i in range(len(self.inventory)):
             for j in range(len(self.inventory[i])):
                 if self.inventory[j][i][0] == 'tree':

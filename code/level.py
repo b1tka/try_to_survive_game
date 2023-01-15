@@ -196,7 +196,7 @@ class Level:
         if self.inside:
             self.texture_update(pygame.Vector2(0, -386))
             self.player.sprite.rect.x = 350
-            self.player.sprite.rect.y = 836
+            self.player.sprite.rect.y = 700
         else:
             self.inside = True
             self.texture_update(pygame.Vector2(0, 386))

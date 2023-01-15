@@ -27,7 +27,7 @@ class Crate(StaticTile):
         self.is_hitbox = hitbox
         if hitbox:
             self.hitbox = [pos_x + 32, pos_y + 32, 64, 32]
-            self.resource = (randint(1, 6), object)
+            self.resource = (randint(1, 3), object)
 
     def get_resource(self):
         return self.resource

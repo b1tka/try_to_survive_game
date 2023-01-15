@@ -16,12 +16,16 @@ level_2 = {
 
 hero = {
     'w': r'..\data\player_data\player_behind.png',
-    'a': r'..\data\player_data\player_left.png',
+    'a': r'../data/player_data/player_left.png',
     's': r'..\data\player_data\player_forward.png',
-    'd': r'..\data\player_data\player_right.png'
+    'd': r'../data/player_data/player_right.png'
 }
 
 inventory = {
     'cells': r'..\data\level_data\level\inventory\inventory_cells.csv',
     'hero': r'..\data\level_data\level\inventory\inventory_hero.csv'
+}
+
+items = {
+    'sword': {'tree': 2, 'stone': 4}
 }
