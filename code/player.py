@@ -1,20 +1,21 @@
 import pygame
 from game_data import hero, items
 from settings import speed
-from different_funcs import csv_layout, import_cut_graphics
-from objects import StaticTile, Crate, TreeInventory, StoneInventory
+from different_funcs import csv_layout, import_cut_graphics, rotate_frames
+from objects import StaticTile, Crate, TreeInventory, StoneInventory, CellCraft, SwordInventory
 from settings import tile_size
 from game_data import inventory
 
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, screen):
+    def __init__(self, screen, camera):
         super().__init__()
         self.frames_behind = import_cut_graphics(hero['w'], size_x=60, size_y=93)
         self.frames_left = import_cut_graphics(hero['a'], size_x=60, size_y=93)
         self.frames_right = import_cut_graphics(hero['d'], size_x=60, size_y=93)
         self.frames_forward = import_cut_graphics(hero['s'], size_x=60, size_y=93)
         self.cur_frame = 0
+        self.camera = camera
         self.rect = self.frames_forward[1].get_rect()
         self.vision = 'forward'
         self.direction = pygame.math.Vector2(0, 0)
@@ -22,8 +23,9 @@ class Player(pygame.sprite.Sprite):
         self.rect.centery = 450
         self.x_lock = True
         self.y_lock = True
-        self.healthpoints = 5
+        self.healthpoints = 10
         self.inventory = Inventory(screen)
+        self.attack_group = pygame.sprite.Group()
 
     def move(self):
         keys = pygame.key.get_pressed()
@@ -61,6 +63,19 @@ class Player(pygame.sprite.Sprite):
 
     def get_rect(self):
         return self.rect
+
+    def get_damage(self):
+        self.healthpoints -= 1
+        self.camera.update_hp(self.healthpoints)
+        if self.healthpoints == 0:
+            self.end_game()
+
+    def end_game(self):
+        pass
+
+    def attack(self):
+        if self.inventory.is_sword():
+            self.attack_group.add(Attack(self.rect.x, self.rect.y, self.vision))
 
     def reset_direction(self):
         self.direction.x = 0
@@ -109,7 +124,8 @@ class Inventory(pygame.sprite.Sprite):
         self.cell_sprite.update(pygame.math.Vector2(700, 300))
         self.all_resources = {
             'tree': 0,
-            'stone': 0
+            'stone': 0,
+            'sword': 0
         }
         self.inventory = list()
         for _ in range(4):
@@ -162,11 +178,24 @@ class Inventory(pygame.sprite.Sprite):
             return None
         return possible_items
 
-    def draw_cell_craft(self):
-        background = import_cut_graphics(r'..\data\level_data\texture\craft_cell.png', size_x=256, size_y=128)[0]
-        background.blit(pygame.image.load(r'..\data\level_data\texture\sword.png'), (0, 0))
-        sprite =
-        return pygame.sprite.GroupSingle(sprite)
+    def craft(self, object, amount):
+        self.add_item(object, amount)
+        resource = items[object]
+        for key in resource:
+            self.all_resources[key] -= resource[key]
+        for key in resource:
+            object = key
+            if resource[object] <= 0:
+                for i in range(len(self.inventory)):
+                    for j in range(len(self.inventory[i])):
+                        if self.inventory[i][j][0] == object:
+                            ostatok = resource[object] - self.inventory[i][j][1]
+                            if ostatok < 0:
+                                self.inventory[i][j][1] = self.inventory[i][j][1] - resource[object]
+                                resource[object] = ostatok
+                            else:
+                                self.inventory[i][j] = ['NonObject', 0]
+                                resource[object] = 0
 
     def add_item(self, object, amount):
         is_break = False
@@ -193,16 +222,62 @@ class Inventory(pygame.sprite.Sprite):
             if is_break:
                 break
 
+    def is_sword(self):
+        if self.all_resources['sword']:
+            return True
+        return False
+
     def run(self):
         self.cell_sprite.draw(self.screen)
         self.hero_sprite.draw(self.screen)
-        self.draw_cell_craft().draw(self.screen)
         craft = self.check_craft()
         if craft:
-            print(craft)
+            for i in range(len(craft)):
+                pygame.sprite.GroupSingle(CellCraft(0, i * 2, craft[i])).draw(self.screen)
+            if pygame.key.get_pressed()[pygame.K_c]:
+                self.craft('sword', 1)
         for i in range(len(self.inventory)):
             for j in range(len(self.inventory[i])):
                 if self.inventory[j][i][0] == 'tree':
                     pygame.sprite.GroupSingle(TreeInventory(i, j, self.inventory[j][i][-1])).draw(self.screen)
                 elif self.inventory[j][i][0] == 'stone':
                     pygame.sprite.GroupSingle(StoneInventory(i, j, self.inventory[j][i][-1])).draw(self.screen)
+                elif self.inventory[j][i][0] == 'sword':
+                    pygame.sprite.GroupSingle(SwordInventory(i, j, self.inventory[j][i][-1])).draw(self.screen)
+
+
+class Attack(pygame.sprite.Sprite):
+    def __init__(self, x, y, vision):
+        super().__init__()
+        self.attack_frames = import_cut_graphics(r'..\data\player_data\attack_silver.png', size_x=136, size_y=158)
+        self.cur_frame = 0
+        if vision == 'right':
+            self.x = x + 60
+            self.y = y
+        elif vision == 'left':
+            self.x = x - 120
+            self.y = y
+        elif vision == 'forward':
+            self.y = y + 90
+            self.x = x - 46
+        elif vision == 'behind':
+            self.x = x - 46
+            self.y = y - 90
+        self.vision = vision
+
+    def update(self):
+        self.cur_frame += 1
+        if self.vision == 'right':
+            self.frames = self.attack_frames
+        elif self.vision == 'behind':
+            self.frames = rotate_frames(self.attack_frames, 90)
+        elif self.vision == 'left':
+            self.frames = rotate_frames(self.attack_frames, 180)
+        elif self.vision == 'forward':
+            self.frames = rotate_frames(self.attack_frames, 270)
+        self.image = self.frames[self.cur_frame // 2]
+        self.rect = self.image.get_rect()
+        self.rect.x = self.x
+        self.rect.y = self.y
+        if self.cur_frame == 8:
+            self.kill()

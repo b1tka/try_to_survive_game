@@ -27,5 +27,11 @@ inventory = {
 }
 
 items = {
-    'sword': {'tree': 2, 'stone': 4}
+    'sword': {'tree': 2, 'stone': 4},
 }
+
+items_path = {
+    'sword': r'..\data\level_data\texture\sword_craft.png',
+}
+
+dragon = r'..\data\dragon_data\dragon_behind.png'

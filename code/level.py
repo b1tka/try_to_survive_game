@@ -1,14 +1,16 @@
 import pygame
 from different_funcs import csv_layout, import_cut_graphics
-from objects import StaticTile, Crate, Border, Camera
+from objects import StaticTile, Crate, Border, Camera, Book
 from settings import tile_size, speed
 from player import Player
+from enemy import Dragon
 
 
 class Level:
     def __init__(self, level_data, cave_data, screen):
         self.screen = screen
         self.direction = pygame.math.Vector2(0, 0)
+        self.end = False
         self.level_l = pygame.sprite.Group()
         self.inside = False
         self.lock_y = False
@@ -60,9 +62,19 @@ class Level:
         self.vertical_borders_inside.add(Border(0, 0, 1, 1280))
         self.vertical_borders_inside.add(Border(2559, 0, 1, 1280))
 
-        player = Player(self.screen)
-        self.player = pygame.sprite.GroupSingle(player)
         self.camera = pygame.sprite.GroupSingle(Camera())
+        player = Player(self.screen, self.camera.sprite)
+        self.player = pygame.sprite.GroupSingle(player)
+
+        self.attack_group = player.attack_group
+
+        self.book = pygame.sprite.GroupSingle(Book())
+        dragon = Dragon(self.screen, player, self.book.sprite)
+        self.dragon = pygame.sprite.GroupSingle(dragon)
+        self.fireballs = dragon.fireballs_group
+
+
+        self.cd_damage = 0
 
     def create_tile_group(self, layout, type):
         sprite_group = pygame.sprite.Group()
@@ -214,12 +226,19 @@ class Level:
             self.vertical_borders.update(direction)
             self.horizontal_borders.update(direction)
             self.bridge_sprite.update(direction)
+            self.dragon.update(direction)
+            self.book.update(direction)
         else:
             self.cave_inside_sprite.update(direction)
             self.vertical_borders_inside.update(direction)
             self.horizontal_borders_inside.update(direction)
             self.door_inside_sprite.update(direction)
             self.stone_sprite.update(direction)
+        self.attack_group.update()
+
+    def get_keys(self, event):
+        if event == 1:
+            self.player.sprite.attack()
 
     def texture_draw(self, screen):
         if not self.inside:
@@ -233,8 +252,11 @@ class Level:
             self.vertical_borders.draw(screen)
             self.horizontal_borders.draw(screen)
             self.trees_sprites.draw(screen)
+            self.dragon.draw(screen)
+            self.fireballs.draw(screen)
             if pygame.key.get_pressed()[pygame.K_TAB]:
                 self.player.sprite.inventory.run()
+            self.book.draw(screen)
         else:
             self.cave_inside_sprite.draw(screen)
             self.door_inside_sprite.draw(screen)
@@ -244,22 +266,32 @@ class Level:
             self.stone_sprite.draw(screen)
             if pygame.key.get_pressed()[pygame.K_TAB]:
                 self.player.sprite.inventory.run()
+        self.attack_group.draw(screen)
 
     def check_collide(self):
         player = self.player.sprite
+        if self.dragon.sprite:
+            dragon = self.dragon.sprite
         keys = pygame.key.get_pressed()
         if not self.inside:
             trees = self.trees_sprites.sprites()
             if pygame.sprite.spritecollideany(player, self.door_sprite):
                 if keys[pygame.K_e]:
                     self.switch_level()
-            if pygame.sprite.spritecollideany(self.player.sprite, self.water_sprites) or \
-                    pygame.sprite.spritecollideany(self.player.sprite, self.cave_sprites) or \
-                    pygame.sprite.spritecollideany(self.player.sprite, self.cave2_sprites) or \
-                    pygame.sprite.spritecollideany(self.player.sprite, self.horizontal_borders) or \
-                    pygame.sprite.spritecollideany(self.player.sprite, self.vertical_borders):
+            if pygame.sprite.spritecollideany(player, self.water_sprites) or \
+                    pygame.sprite.spritecollideany(player, self.cave_sprites) or \
+                    pygame.sprite.spritecollideany(player, self.cave2_sprites) or \
+                    pygame.sprite.spritecollideany(player, self.horizontal_borders) or \
+                    pygame.sprite.spritecollideany(player, self.vertical_borders):
                 self.texture_update(self.direction * speed * -1)
                 self.player.update(back=True)
+            if self.dragon.sprite:
+                dragon = self.dragon.sprite
+                if dragon.rect.centerx - 500 < player.rect.centerx < dragon.rect.centerx + 500 \
+                        and dragon.rect.centery - 500 < dragon.rect.centery < dragon.rect.centery + 500:
+                    dragon.change_picture(collide=True)
+                else:
+                    dragon.change_picture(collide=False)
             for tree in trees:
                 if tree.hitbox[0] - 10 < player.rect.centerx < tree.hitbox[0] + tree.hitbox[2] + 10 and \
                         tree.hitbox[1] - 10 < player.rect.centery < tree.hitbox[1] + tree.hitbox[3] + 10:
@@ -287,6 +319,24 @@ class Level:
                         stone.hitbox[1] < player.rect.centery < stone.hitbox[1] + stone.hitbox[3]:
                     self.texture_update(self.direction * speed * -1)
                     self.player.update(back=True)
+        if self.dragon.sprite:
+            if pygame.sprite.spritecollideany(self.dragon.sprite, self.attack_group):
+                self.dragon.sprite.get_damage()
+            fire_balls = pygame.sprite.spritecollideany(player, self.fireballs)
+            if fire_balls:
+                player.get_damage()
+                fire_balls.kill()
+            if pygame.sprite.spritecollideany(player, self.dragon):
+                if self.cd_damage == 0:
+                    player.get_damage()
+                    self.cd_damage += 1
+        if pygame.sprite.spritecollideany(self.player.sprite, self.book):
+            self.end = True
+
+    def end_game(self):
+        if self.end:
+            return True
+        return False
 
     def run(self):
         self.move()
@@ -294,6 +344,9 @@ class Level:
         self.texture_update(self.direction * speed)
         self.player.update()
         self.check_collide()
+        if self.cd_damage > 0:
+            self.cd_damage += 1
+            self.cd_damage = self.cd_damage % 180
 
         self.texture_draw(self.screen)
         self.camera.draw(self.screen)
