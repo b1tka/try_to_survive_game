@@ -40,3 +40,15 @@ class End:
 
     def run(self):
         self.window.draw(self.screen)
+
+
+class Win:
+    def __init__(self, screen):
+        self.window = pygame.sprite.GroupSingle(WinSprite())
+        self.window.sprite.image = pygame.image.load('..\data\window\win.png')
+        self.window.sprite.rect.centerx = 800
+        self.window.sprite.rect.centery = 450
+        self.screen = screen
+
+    def run(self):
+        self.window.draw(self.screen)

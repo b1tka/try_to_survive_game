@@ -61,7 +61,6 @@ class Border(pygame.sprite.Sprite):
     def __init__(self, left, top, width, height):
         super().__init__()
         self.image = pygame.Surface((width, height))
-        self.image.fill('white')
         self.rect = self.image.get_rect()
         self.rect.x = left
         self.rect.y = top
@@ -121,7 +120,7 @@ class StoneInventory(ObjInv):
 
 class SwordInventory(ObjInv):
     def __init__(self, x, y, amount):
-        super().__init__(x, y, r'D:\PyGameProject\data\level_data\texture\sword.png', amount)
+        super().__init__(x, y, r'..\data\level_data\texture\sword.png', amount)
 
 
 class CellCraft(ObjInv):
@@ -149,7 +148,7 @@ class FireBall(pygame.sprite.Sprite):
         k, b, angle = find_coefficient_and_angle(x1, y1, x2, y2)
         self.k = k
         self.b = b
-        self.frames = rotate_frames(import_cut_graphics(r'D:\PyGameProject\data\dragon_data\fireball.png',
+        self.frames = rotate_frames(import_cut_graphics(r'..\data\dragon_data\fireball.png',
                                                         size_x=128, size_y=128), angle)
         self.image = self.frames[0]
         self.rect = self.image.get_rect()
@@ -169,7 +168,6 @@ class FireBall(pygame.sprite.Sprite):
         elif self.rotation == 'down':
             self.rect.centerx += 0
             self.rect.centery -= self.speed
-        print(self.rect.centerx, self.rect.centery)
 
         if self.rect.centery < 0 or self.rect.centerx < 0 or self.rect.centerx > 1500 \
             or self.rect.centery > 2000:

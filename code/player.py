@@ -71,7 +71,9 @@ class Player(pygame.sprite.Sprite):
             self.end_game()
 
     def end_game(self):
-        pass
+        if self.healthpoints == 0:
+            return True
+        return False
 
     def attack(self):
         if self.inventory.is_sword():

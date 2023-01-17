@@ -1,7 +1,7 @@
 import pygame
 import sys
 from game_data import level_1, level_2
-from start_window import StartWindow, End
+from start_window import StartWindow, End, Win
 from level import Level
 
 from settings import *
@@ -46,6 +46,18 @@ def end_window():
         clock.tick(FPS)
 
 
+def win_window():
+    win = Win(screen)
+    screen.fill('white')
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+        win.run()
+        pygame.display.flip()
+        clock.tick(FPS)
+
+
 run = True
 start_window()
 while run:
@@ -58,6 +70,8 @@ while run:
             level.get_keys(event.button)
     level.run()
     if level.end_game():
+        win_window()
+    if level.player.sprite.end_game():
         end_window()
     pygame.display.flip()
 pygame.quit()
